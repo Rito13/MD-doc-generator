@@ -727,10 +727,15 @@ def main() -> None:
 
     STYLES["red"] = "\x1b[91m" if should_color else ""
     STYLES["green"] = "\x1b[92m" if should_color else ""
+    STYLES["cyan"] = "\x1b[96m" if should_color else ""
     STYLES["yellow"] = "\x1b[93m" if should_color else ""
+    STYLES["blue"] = "\x1b[94m" if should_color else ""
+    STYLES["purple"] = "\x1b[95m" if should_color else ""
     STYLES["bold"] = "\x1b[1m" if should_color else ""
     STYLES["regular"] = "\x1b[22m" if should_color else ""
     STYLES["reset"] = "\x1b[0m" if should_color else ""
+
+    state = State()
 
     # Formats Links
     for key in LINKS.keys():
@@ -745,7 +750,7 @@ def main() -> None:
             try:
                 import polib  # type: ignore
             except ImportError:
-                print("Base template strings localization requires `polib`.")
+                print_error("Base template strings localization requires `polib`.",state)
                 exit(1)
 
             pofile = polib.pofile(lang_file)
@@ -753,7 +758,7 @@ def main() -> None:
                 if entry.msgid in BASE_STRINGS:
                     strings_l10n[entry.msgid] = entry.msgstr
         else:
-            print(f'No PO file at "{lang_file}" for language "{args.lang}".')
+            print_info(f'No PO file at "{lang_file}" for language "{args.lang}". Using default language.',state)
 
     print("Checking for errors in the XML class reference...")
 
@@ -782,7 +787,6 @@ def main() -> None:
             file_list.append(path)
 
     classes: Dict[str, Tuple[ET.Element, str]] = {}
-    state = State()
 
     for cur_file in file_list:
         try:
@@ -904,6 +908,10 @@ def print_error(error: str, state: State) -> None:
 def print_warning(warning: str, state: State) -> None:
     print(f'{STYLES["yellow"]}{STYLES["bold"]}WARNING:{STYLES["regular"]} {warning}{STYLES["reset"]}')
     state.num_warnings += 1
+
+
+def print_info(inf: str, state: State) -> None:
+    print(f'{STYLES["cyan"]}{STYLES["bold"]}NOTE:{STYLES["regular"]} {inf}{STYLES["reset"]}')
 
 
 def translate(string: str) -> str:
